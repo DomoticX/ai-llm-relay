@@ -6,6 +6,14 @@ A flexible PHP-based relay for OpenAI-compatible LLM servers (LM Studio, Ollama,
 
 Easy deployment on a shared hosting or VPS/DS, no SQL database needed!
 
+**What can it be used for?**
+
+- You are running LLM software locally on your own network (for example with LM Studio).
+- Port forwarding is configured on your router.
+- You want to hide your private IP address.
+- You have multiple LLM machines active on your network; this relay allows users to select the target machine.
+- You can route the IP and port based on the provided token.
+
 ## Features
 
 - **Token routing**: Route incoming Bearer tokens to different upstream LLM servers
