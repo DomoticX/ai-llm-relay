@@ -4,6 +4,8 @@
 
 A flexible PHP-based relay for OpenAI-compatible LLM servers (LM Studio, Ollama, vLLM, Anthropic, etc.).
 
+Easy deployment on a shared hosting or VPS/DS, no SQL database needed!
+
 ## Features
 
 - **Token routing**: Route incoming Bearer tokens to different upstream LLM servers
