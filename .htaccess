@@ -1,0 +1,54 @@
+# ============================================================
+# .htaccess — AI LLM Relay
+#
+# CURL-voorbeeld:
+#   curl -sS -H "Authorization: Bearer uwtoken" \
+#        https://uwdomein.nl/v1/chat/completions
+#
+# PLESK/NGINX: voeg toe aan "Extra Nginx-regels":
+#   proxy_set_header Authorization $http_authorization;
+#   proxy_pass_header Authorization;
+# ============================================================
+
+# --- Authorization-header doorgeven aan PHP ---
+# Zonder deze regel ziet PHP geen Bearer-token via HTTP_AUTHORIZATION
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+# --- Rewrite-engine activeren ---
+RewriteEngine On
+
+# --- Laat echte bestanden en mappen ongemoeid ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# --- OpenAI/LM Studio-compatibele paden doorsturen naar relay.php ---
+# Formaat: /v1/<eindpunt>  →  relay.php?path=/v1/<eindpunt>
+RewriteRule ^v1/(.*)$       relay.php?path=/v1/$1      [QSA,L]
+
+# --- LM Studio API-alias paden ---
+# Formaat: /api/v1/<eindpunt>  →  relay.php?path=/api/v1/<eindpunt>
+RewriteRule ^api/v1/(.*)$   relay.php?path=/api/v1/$1  [QSA,L]
+
+# --- Anthropic API paden ---
+# Formaat: /anthropic/<eindpunt>  →  relay.php?path=/anthropic/<eindpunt>
+RewriteRule ^anthropic/(.*)$ relay.php?path=/anthropic/$1 [QSA,L]
+
+# --- Blokkeer directe toegang tot gevoelige bestanden ---
+# config.json en auth.json mogen NOOIT direct opvraagbaar zijn via HTTP
+<FilesMatch "\.(json|txt|sqlite|log|bak|backup|sh|env)$">
+    Require all denied
+</FilesMatch>
+
+# --- Blokkeer directe toegang tot relay.php (alleen via rewrite) ---
+# Commentaar: relay.php mag niet direct aangeroepen worden, alleen via de herschreven paden
+<Files "relay.php">
+    # Sta alleen verzoeken toe die via een RewriteRule herschreven zijn
+    RewriteCond %{THE_REQUEST} ^[A-Z]+\s/relay\.php [NC]
+    RewriteRule ^ - [F,L]
+</Files>
+
+# --- Toon geen directory-listings ---
+Options -Indexes
+
+# --- Overige verzoeken toestaan (voor index.php beheerpagina) ---
+Require all granted
